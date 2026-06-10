@@ -10,7 +10,7 @@ export default function AdminProfile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<any>({
     name: '', tagline: '', bio: '', photo_url: '', cv_url: '',
     email: '', whatsapp: '', instagram: '', linkedin: '', youtube: ''
   })
@@ -43,7 +43,7 @@ export default function AdminProfile() {
     const file = e.target.files?.[0]
     if (!file) return
     const url = await uploadFile(file, 'avatars')
-    if (url) setForm(f => ({ ...f, photo_url: url }))
+    if (url) setForm((f: any) => ({ ...f, photo_url: url }))
   }
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', color: 'white' }}>Loading...</div>
@@ -88,10 +88,10 @@ export default function AdminProfile() {
                 <div key={f.key}>
                   <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', display: 'block', marginBottom: '6px' }}>{f.label}</label>
                   {f.type === 'textarea' ? (
-                    <textarea value={(form as any)[f.key] || ''} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                    <textarea value={(form as any)[f.key] || ''} onChange={e => setForm((p: any) => ({ ...p, [f.key]: e.target.value }))}
                       rows={4} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 12px', color: 'white', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
                   ) : (
-                    <input type={f.type} value={(form as any)[f.key] || ''} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                    <input type={f.type} value={(form as any)[f.key] || ''} onChange={e => setForm((p: any) => ({ ...p, [f.key]: e.target.value }))}
                       style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 12px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
                   )}
                 </div>
