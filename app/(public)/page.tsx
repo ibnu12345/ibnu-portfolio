@@ -1,5 +1,6 @@
 'use client'
 
+import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
@@ -15,6 +16,12 @@ export default function HomePage() {
   const [currentRole, setCurrentRole] = useState(0)
   const [displayed, setDisplayed] = useState('')
   const [typing, setTyping] = useState(true)
+  const [profile, setProfile] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.from('profile').select('*').single()
+      .then(({ data }) => { if (data) setProfile(data) })
+  }, [])
 
   useEffect(() => {
     const role = roles[currentRole]
@@ -83,8 +90,14 @@ export default function HomePage() {
               <div style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)', borderRadius: '24px' }} />
                 <div style={{ position: 'relative', width: '320px', height: '400px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>👤</div>
-                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Upload foto di Admin Panel</p>
+                  {profile?.photo_url ? (
+  <img src={profile.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+) : (
+  <>
+    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>👤</div>
+    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Upload foto di Admin Panel</p>
+  </>
+)}
                 </div>
               </div>
             </div>
