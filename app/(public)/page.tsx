@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '../lib/supabase'
@@ -57,7 +58,11 @@ export default function HomePage() {
                 <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Researcher · Designer · Creator</span>
               </div>
 
-              <h1 style={{ fontSize: '60px', fontWeight: 800, lineHeight: 1.1, margin: 0 }}>
+              <motion.h1
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6 }}
+  style={{ fontSize: '60px', fontWeight: 800, lineHeight: 1.1, margin: 0 }}>
                 {profile?.name?.split(' ').slice(0, 2).join(' ') || 'Muhamad Ibnu'}
                 <br />
                 <span style={{ background: 'linear-gradient(135deg, #818cf8, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
