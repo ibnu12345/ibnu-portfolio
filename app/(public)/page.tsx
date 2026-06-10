@@ -1,8 +1,8 @@
 'use client'
 
-import { supabase } from '../lib/supabase'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { supabase } from '../lib/supabase'
 
 const roles = [
   'Educational Researcher',
@@ -58,10 +58,10 @@ export default function HomePage() {
               </div>
 
               <h1 style={{ fontSize: '60px', fontWeight: 800, lineHeight: 1.1, margin: 0 }}>
-                Muhamad Ibnu
+                {profile?.name?.split(' ').slice(0, 2).join(' ') || 'Muhamad Ibnu'}
                 <br />
                 <span style={{ background: 'linear-gradient(135deg, #818cf8, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Setiawan Pratama
+                  {profile?.name?.split(' ').slice(2).join(' ') || 'Setiawan Pratama'}
                 </span>
               </h1>
 
@@ -72,8 +72,7 @@ export default function HomePage() {
               </div>
 
               <p style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, maxWidth: '420px', fontSize: '15px' }}>
-                Menjembatani teori akademik dan praktik nyata dalam pendidikan Islam.
-                Mengeksplorasi inovasi media pembelajaran berbasis teknologi.
+                {profile?.bio || 'Menjembatani teori akademik dan praktik nyata dalam pendidikan Islam. Mengeksplorasi inovasi media pembelajaran berbasis teknologi.'}
               </p>
 
               <div style={{ display: 'flex', gap: '12px' }}>
@@ -86,18 +85,19 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Photo */}
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <div style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)', borderRadius: '24px' }} />
-                <div style={{ position: 'relative', width: '320px', height: '400px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ position: 'relative', width: '320px', height: '400px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}>
                   {profile?.photo_url ? (
-  <img src={profile.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-) : (
-  <>
-    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>👤</div>
-    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Upload foto di Admin Panel</p>
-  </>
-)}
+                    <img src={profile.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Profile" />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                      <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>👤</div>
+                      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Upload foto di Admin Panel</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
