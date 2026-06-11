@@ -66,7 +66,7 @@ export default function GalleryPage() {
         )}
 
         {/* Grid */}
-        <div className="gallery-grid" style={{, gap: '12px' }}>
+        <div className="gallery-grid" style={{ gap: '12px' }}>
           {filtered.map((item, i) => (
             <motion.div
               key={item.id}
