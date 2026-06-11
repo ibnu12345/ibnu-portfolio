@@ -6,12 +6,13 @@ import { signOut } from '../../lib/auth'
 import {
   LayoutDashboard, User, FileText, Briefcase, Zap,
   PenSquare, Award, Image, Video, MessageSquare,
-  Globe, LogOut
+  Globe, LogOut, GraduationCap
 } from 'lucide-react'
 
 const menus = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/profile', label: 'Profile', icon: User },
+  { href: '/admin/about', label: 'About (Edu & Org)', icon: GraduationCap },
   { href: '/admin/research', label: 'Research', icon: FileText },
   { href: '/admin/portfolio', label: 'Portfolio', icon: Briefcase },
   { href: '/admin/skills', label: 'Skills', icon: Zap },

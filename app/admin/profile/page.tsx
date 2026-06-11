@@ -24,6 +24,12 @@ export default function AdminProfile() {
     home_bento_research_desc: 'Berfokus pada optimasi media pembelajaran bahasa Arab dan inovasi teknologi dalam pendidikan Islam modern.',
     home_cta_title: 'Tertarik Berkolaborasi?',
     home_cta_desc: 'Baik penelitian, desain, atau proyek kreatif — saya selalu terbuka untuk kolaborasi yang bermakna.',
+    about_heading_line1: 'Peneliti, Desainer,',
+    about_heading_line2: 'dan Pendidik',
+    institution: 'UIN Siber Syekh Nurjati Cirebon',
+    toafl: '547 / B1',
+    toefl: '410',
+    location: 'Cilegon, Banten, Indonesia',
   })
 
   useEffect(() => {
@@ -53,6 +59,12 @@ export default function AdminProfile() {
         home_bento_research_desc: data.home_bento_research_desc || 'Berfokus pada optimasi media pembelajaran bahasa Arab dan inovasi teknologi dalam pendidikan Islam modern.',
         home_cta_title: data.home_cta_title || 'Tertarik Berkolaborasi?',
         home_cta_desc: data.home_cta_desc || 'Baik penelitian, desain, atau proyek kreatif — saya selalu terbuka untuk kolaborasi yang bermakna.',
+        about_heading_line1: data.about_heading_line1 || 'Peneliti, Desainer,',
+        about_heading_line2: data.about_heading_line2 || 'dan Pendidik',
+        institution: data.institution || 'UIN Siber Syekh Nurjati Cirebon',
+        toafl: data.toafl || '547 / B1',
+        toefl: data.toefl || '410',
+        location: data.location || 'Cilegon, Banten, Indonesia',
       })
     }
   }
@@ -273,6 +285,40 @@ export default function AdminProfile() {
                   onChange={e => setForm((p: any) => ({ ...p, home_cta_desc: e.target.value }))}
                   rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
               </div>
+            </div>
+          </div>
+
+          {/* About Page Fields */}
+          <div style={sectionStyle}>
+            <p style={sectionTitleStyle}>Halaman About — Heading & Biodata</p>
+            <div style={{ display: 'grid', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={labelStyle}>Heading Baris 1</label>
+                  <input type="text" value={form.about_heading_line1 || ''}
+                    onChange={e => setForm((p: any) => ({ ...p, about_heading_line1: e.target.value }))}
+                    style={inputStyle} placeholder="Peneliti, Desainer," />
+                </div>
+                <div>
+                  <label style={labelStyle}>Heading Baris 2 (warna ungu)</label>
+                  <input type="text" value={form.about_heading_line2 || ''}
+                    onChange={e => setForm((p: any) => ({ ...p, about_heading_line2: e.target.value }))}
+                    style={inputStyle} placeholder="dan Pendidik" />
+                </div>
+              </div>
+              {[
+                { key: 'institution', label: 'Institusi' },
+                { key: 'toafl', label: 'TOAFL' },
+                { key: 'toefl', label: 'TOEFL ITP' },
+                { key: 'location', label: 'Lokasi' },
+              ].map(f => (
+                <div key={f.key}>
+                  <label style={labelStyle}>{f.label}</label>
+                  <input type="text" value={form[f.key] || ''}
+                    onChange={e => setForm((p: any) => ({ ...p, [f.key]: e.target.value }))}
+                    style={inputStyle} />
+                </div>
+              ))}
             </div>
           </div>
 
