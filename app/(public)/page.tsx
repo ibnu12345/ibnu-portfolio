@@ -5,26 +5,44 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 
-const roles = [
-  'Educational Researcher',
-  'Arabic Language Researcher',
-  'Graphic Designer',
-  'Content Creator',
-  'Public Speaker',
-]
-
 export default function HomePage() {
   const [currentRole, setCurrentRole] = useState(0)
   const [displayed, setDisplayed] = useState('')
   const [typing, setTyping] = useState(true)
   const [profile, setProfile] = useState<any>(null)
+  const [latestResearch, setLatestResearch] = useState<any>(null)
+  const [featuredPortfolios, setFeaturedPortfolios] = useState<any[]>([])
 
   useEffect(() => {
     supabase.from('profile').select('*').single()
       .then(({ data }) => { if (data) setProfile(data) })
+
+    supabase.from('research').select('*').order('published_date', { ascending: false }).limit(1)
+      .then(({ data }) => { if (data && data.length > 0) setLatestResearch(data[0]) })
+
+    supabase.from('portfolio').select('*').eq('is_featured', true).order('created_at', { ascending: false }).limit(2)
+      .then(({ data }) => {
+        if (data && data.length > 0) setFeaturedPortfolios(data)
+        else supabase.from('portfolio').select('*').order('created_at', { ascending: false }).limit(2)
+          .then(({ data: d2 }) => { if (d2) setFeaturedPortfolios(d2) })
+      })
   }, [])
 
+  const roles: string[] = profile?.roles && profile.roles.length > 0
+    ? profile.roles
+    : ['Educational Researcher', 'Arabic Language Researcher', 'Graphic Designer', 'Content Creator', 'Public Speaker']
+
+  const stats = profile?.stats && profile.stats.length > 0
+    ? profile.stats
+    : [
+        { number: '3+', label: 'Jurnal Publikasi' },
+        { number: '5+', label: 'Tahun Pengalaman' },
+        { number: '10+', label: 'Portfolio Karya' },
+        { number: '100+', label: 'Jam Mengajar' },
+      ]
+
   useEffect(() => {
+    if (roles.length === 0) return
     const role = roles[currentRole]
     let timeout: NodeJS.Timeout
     if (typing) {
@@ -42,11 +60,16 @@ export default function HomePage() {
       }
     }
     return () => clearTimeout(timeout)
-  }, [displayed, typing, currentRole])
+  }, [displayed, typing, currentRole, roles])
 
   const nameParts = profile?.name?.split(' ') || []
   const firstName = nameParts.slice(0, 2).join(' ') || 'Muhamad Ibnu'
   const lastName = nameParts.slice(2).join(' ') || 'Setiawan Pratama'
+
+  const ctaTitle = profile?.home_cta_title || 'Tertarik Berkolaborasi?'
+  const ctaDesc = profile?.home_cta_desc || 'Baik penelitian, desain, atau proyek kreatif — saya selalu terbuka untuk kolaborasi yang bermakna.'
+  const bentoResearchTitle = profile?.home_bento_research_title || 'Penelitian Bahasa Arab & Pendidikan Islam'
+  const bentoResearchDesc = profile?.home_bento_research_desc || 'Berfokus pada optimasi media pembelajaran bahasa Arab dan inovasi teknologi dalam pendidikan Islam modern.'
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white' }}>
@@ -125,13 +148,23 @@ export default function HomePage() {
                 }}>
                   Lihat Portfolio →
                 </Link>
-                <Link href="/about" style={{
-                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'white', padding: '12px 24px', borderRadius: '999px',
-                  fontSize: '14px', fontWeight: 500, textDecoration: 'none'
-                }}>
-                  Resume
-                </Link>
+                {profile?.cv_url ? (
+                  <a href={profile.cv_url} target="_blank" style={{
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'white', padding: '12px 24px', borderRadius: '999px',
+                    fontSize: '14px', fontWeight: 500, textDecoration: 'none'
+                  }}>
+                    Resume
+                  </a>
+                ) : (
+                  <Link href="/about" style={{
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'white', padding: '12px 24px', borderRadius: '999px',
+                    fontSize: '14px', fontWeight: 500, textDecoration: 'none'
+                  }}>
+                    Resume
+                  </Link>
+                )}
               </motion.div>
             </div>
 
@@ -186,13 +219,8 @@ export default function HomePage() {
 
       {/* STATS */}
       <section style={{ padding: '64px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '24px' }}>
-          {[
-            { number: '3+', label: 'Jurnal Publikasi' },
-            { number: '5+', label: 'Tahun Pengalaman' },
-            { number: '10+', label: 'Portfolio Karya' },
-            { number: '100+', label: 'Jam Mengajar' },
-          ].map((stat, i) => (
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: `repeat(${stats.length},1fr)`, gap: '24px' }}>
+          {stats.map((stat: any, i: number) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
@@ -236,10 +264,10 @@ export default function HomePage() {
                 <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Research Highlights</span>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'white', marginBottom: '12px' }}>
-                Penelitian Bahasa Arab & Pendidikan Islam
+                {bentoResearchTitle}
               </h3>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: 1.7, marginBottom: '24px' }}>
-                Berfokus pada optimasi media pembelajaran bahasa Arab dan inovasi teknologi dalam pendidikan Islam modern.
+                {bentoResearchDesc}
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 {[{ n: '3+', l: 'Papers Published' }, { n: 'Scopus', l: 'Indexed Journal' }].map(s => (
@@ -270,6 +298,7 @@ export default function HomePage() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
+            {/* Latest Research - dynamic */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -279,16 +308,34 @@ export default function HomePage() {
               <p style={{ color: '#818cf8', fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
                 Latest Publication
               </p>
-              <h4 style={{ color: 'white', fontWeight: 600, fontSize: '13px', lineHeight: 1.6, marginBottom: '8px' }}>
-                Media Pembelajaran Bahasa Arab Berbasis AI
-              </h4>
-              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Ijaz Arabi · UIN Malang · Scopus</p>
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>2024</span>
-                <Link href="/research" style={{ color: '#818cf8', fontSize: '12px', textDecoration: 'none' }}>Lihat semua →</Link>
-              </div>
+              {latestResearch ? (
+                <>
+                  <h4 style={{ color: 'white', fontWeight: 600, fontSize: '13px', lineHeight: 1.6, marginBottom: '8px' }}>
+                    {latestResearch.title}
+                  </h4>
+                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>
+                    {latestResearch.journal_name || 'Jurnal Publikasi'}
+                  </p>
+                  <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>
+                      {latestResearch.published_date ? new Date(latestResearch.published_date).getFullYear() : ''}
+                    </span>
+                    <Link href="/research" style={{ color: '#818cf8', fontSize: '12px', textDecoration: 'none' }}>Lihat semua →</Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4 style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400, fontSize: '13px', lineHeight: 1.6, marginBottom: '8px' }}>
+                    Belum ada publikasi
+                  </h4>
+                  <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'flex-end' }}>
+                    <Link href="/research" style={{ color: '#818cf8', fontSize: '12px', textDecoration: 'none' }}>Lihat semua →</Link>
+                  </div>
+                </>
+              )}
             </motion.div>
 
+            {/* Featured Portfolio - dynamic */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -300,21 +347,22 @@ export default function HomePage() {
                 <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Featured Portfolio</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                {[
-                  { title: 'PratamaAI — Platform Pendidikan Islam', desc: 'AI-based Islamic education learning platform' },
-                  { title: 'Desain Grafis & Visual Identity', desc: 'Branding dan konten kreatif berbasis penelitian' },
-                ].map(item => (
-                  <div key={item.title} style={{
+                {featuredPortfolios.length > 0 ? featuredPortfolios.map(item => (
+                  <div key={item.id} style={{
                     display: 'flex', gap: '12px', padding: '14px',
                     background: 'rgba(255,255,255,0.03)', borderRadius: '12px', alignItems: 'flex-start'
                   }}>
                     <div style={{ width: '3px', minHeight: '32px', background: 'rgba(168,85,247,0.5)', borderRadius: '2px', flexShrink: 0, marginTop: '2px' }} />
                     <div>
                       <p style={{ color: 'white', fontSize: '13px', fontWeight: 500, margin: 0 }}>{item.title}</p>
-                      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '2px' }}>{item.desc}</p>
+                      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', marginTop: '2px' }}>
+                        {item.description ? item.description.slice(0, 80) + (item.description.length > 80 ? '...' : '') : item.category || ''}
+                      </p>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>Belum ada portfolio. Tambahkan via Admin Panel.</p>
+                )}
               </div>
               <Link href="/portfolio" style={{ color: '#a78bfa', fontSize: '13px', textDecoration: 'none' }}>
                 Explore All Projects →
@@ -338,10 +386,10 @@ export default function HomePage() {
               borderRadius: '24px', padding: '80px', textAlign: 'center'
             }}>
             <h2 style={{ fontSize: '40px', fontWeight: 700, color: 'white', marginBottom: '16px' }}>
-              Tertarik Berkolaborasi?
+              {ctaTitle}
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto 32px' }}>
-              Baik penelitian, desain, atau proyek kreatif — saya selalu terbuka untuk kolaborasi yang bermakna.
+              {ctaDesc}
             </p>
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
               <Link href="/contact" style={{
