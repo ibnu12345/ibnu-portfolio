@@ -63,7 +63,7 @@ export default function AboutPage() {
         </motion.div>
 
         {/* Bio + Photo */}
-        <div style={{ className: 'grid-2', style: { marginBottom: '80px' } }}>
+        <div className="grid-2" style={{ marginBottom: '80px' }}>
 
           {/* Photo */}
           <motion.div
