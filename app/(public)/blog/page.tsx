@@ -50,7 +50,9 @@ export default function BlogPage() {
                 {item.content && <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: 1.6, margin: '0 0 16px' }}>{item.content.slice(0, 120)}...</p>}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '12px' }}>{item.published_date ? new Date(item.published_date).toLocaleDateString('id-ID') : ''}</span>
-                  <span style={{ color: '#818cf8', fontSize: '13px', cursor: 'pointer' }}>Baca →</span>
+                  <Link href={`/blog/${item.slug}`} style={{ color: '#818cf8', fontSize: '13px', textDecoration: 'none' }}>
+  Baca →
+</Link>
                 </div>
               </div>
             </div>
