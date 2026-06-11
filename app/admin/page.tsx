@@ -45,9 +45,9 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
+    <div className='admin-layout'>
       <Sidebar />
-      <main style={{ flex: 1, padding: '40px' }}>
+      <main className='admin-main'>
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'white', margin: 0 }}>Dashboard</h1>
           <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '6px', fontSize: '14px' }}>Selamat datang di Admin Panel ibnusp_</p>

@@ -70,9 +70,9 @@ export default function AdminAbout() {
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', color: 'white' }}>Loading...</div>
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
+    <div className='admin-layout'>
       <Sidebar />
-      <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+      <main className='admin-main'>
         <div style={{ maxWidth: '800px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
             <div>

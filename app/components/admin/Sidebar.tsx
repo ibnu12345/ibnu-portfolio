@@ -33,12 +33,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div style={{
-      width: '240px', minHeight: '100vh',
-      background: 'rgba(255,255,255,0.02)',
-      borderRight: '1px solid rgba(255,255,255,0.07)',
-      display: 'flex', flexDirection: 'column', flexShrink: 0
-    }}>
+    <div className="admin-sidebar">
       <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <p style={{ fontWeight: 700, fontSize: '18px', color: 'white', margin: 0 }}>
           ibnusp<span style={{ color: '#818cf8' }}>_</span>

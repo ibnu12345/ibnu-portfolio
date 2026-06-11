@@ -39,9 +39,9 @@ export default function AdminMessages() {
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', color: 'white' }}>Loading...</div>
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
+    <div className='admin-layout'>
       <Sidebar />
-      <main style={{ flex: 1, padding: '40px' }}>
+      <main className='admin-main'>
         <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Messages</h1>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: '32px' }}>{items.filter(i => !i.is_read).length} pesan belum dibaca</p>
 

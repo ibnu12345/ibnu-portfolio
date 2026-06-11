@@ -135,9 +135,9 @@ export default function AdminProfile() {
   )
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
+    <div className='admin-layout'>
       <Sidebar />
-      <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+      <main className='admin-main'>
         <div style={{ maxWidth: '720px' }}>
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Profile Settings</h1>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: '32px' }}>Edit informasi profil yang tampil di website</p>

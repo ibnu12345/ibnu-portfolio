@@ -39,7 +39,7 @@ export default function AboutPage() {
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white', paddingTop: '100px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 64px 80px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 80px' }}>
 
         {/* Header */}
         <motion.div
@@ -63,7 +63,7 @@ export default function AboutPage() {
         </motion.div>
 
         {/* Bio + Photo */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', marginBottom: '80px', alignItems: 'start' }}>
+        <div style={{ className: 'grid-2', style: { marginBottom: '80px' } }}>
 
           {/* Photo */}
           <motion.div
@@ -140,7 +140,7 @@ export default function AboutPage() {
           <h2 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '32px', color: 'white' }}>Riwayat Pendidikan</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {education.length > 0 ? education.map((item, i) => (
-              <div key={item.id || i} style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '32px', alignItems: 'start' }}>
+              <div key={item.id || i} className='timeline-row'>
                 <div style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px', padding: '8px 12px', textAlign: 'center' }}>
                   <span style={{ color: '#818cf8', fontSize: '12px', fontWeight: 600 }}>{item.year}</span>
                 </div>
@@ -166,7 +166,7 @@ export default function AboutPage() {
           <h2 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '32px', color: 'white' }}>Pengalaman Organisasi</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {organizations.length > 0 ? organizations.map((item, i) => (
-              <div key={item.id || i} style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '32px', alignItems: 'start' }}>
+              <div key={item.id || i} className='timeline-row'>
                 <div style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '8px', padding: '8px 12px', textAlign: 'center' }}>
                   <span style={{ color: '#a78bfa', fontSize: '12px', fontWeight: 600 }}>{item.year}</span>
                 </div>

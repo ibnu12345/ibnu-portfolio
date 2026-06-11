@@ -30,7 +30,7 @@ export default function GalleryPage() {
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white', paddingTop: '100px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 64px 80px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 80px' }}>
 
         <div style={{ marginBottom: '48px' }}>
           <p style={{ color: '#818cf8', fontSize: '13px', fontWeight: 500, marginBottom: '12px' }}>Galeri</p>
@@ -66,7 +66,7 @@ export default function GalleryPage() {
         )}
 
         {/* Grid */}
-        <div style={{ columns: '3', gap: '12px' }}>
+        <div className="gallery-grid" style={{, gap: '12px' }}>
           {filtered.map((item, i) => (
             <motion.div
               key={item.id}

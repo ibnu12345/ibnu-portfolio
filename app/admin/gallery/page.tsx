@@ -43,9 +43,9 @@ export default function AdminGallery() {
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', color: 'white' }}>Loading...</div>
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
+    <div className='admin-layout'>
       <Sidebar />
-      <main style={{ flex: 1, padding: '40px' }}>
+      <main className='admin-main'>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', margin: 0 }}>Gallery</h1>

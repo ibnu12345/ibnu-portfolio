@@ -94,7 +94,7 @@ export default function ContactPage() {
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white', paddingTop: '100px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 64px 80px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 80px' }}>
         <div style={{ marginBottom: '64px' }}>
           <p style={{ color: '#818cf8', fontSize: '13px', fontWeight: 500, marginBottom: '12px' }}>Kontak</p>
           <h1 style={{ fontSize: '48px', fontWeight: 800, margin: '0 0 16px' }}>Hubungi Saya</h1>
@@ -103,7 +103,7 @@ export default function ContactPage() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '48px' }}>
+        <div className='contact-grid'>
 
           {/* Contact info */}
           <div>
