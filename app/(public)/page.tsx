@@ -4,6 +4,36 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 
+function PhotoBlock({ photoUrl }: { photoUrl?: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 40, scale: 0.95 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
+      style={{ display: 'flex', justifyContent: 'center' }}>
+      <div style={{ position: 'relative', width: '240px', maxWidth: '100%' }}>
+        <div style={{
+          position: 'absolute', inset: '-20px',
+          background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)',
+          borderRadius: '24px'
+        }} />
+        <div style={{
+          position: 'relative', width: '100%', aspectRatio: '4/5',
+          borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))'
+        }}>
+          {photoUrl ? (
+            <img src={photoUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Profile" />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>👤</div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 export default function HomePage() {
   const [currentRole, setCurrentRole] = useState(0)
   const [displayed, setDisplayed] = useState('')
@@ -24,11 +54,18 @@ export default function HomePage() {
       })
   }, [])
 
-  const roles: string[] = profile?.roles?.length > 0 ? profile.roles : ['Educational Researcher', 'Arabic Language Researcher', 'Graphic Designer', 'Content Creator', 'Public Speaker']
-  const stats = profile?.stats?.length > 0 ? profile.stats : [
-    { number: '3+', label: 'Jurnal Publikasi' }, { number: '5+', label: 'Tahun Pengalaman' },
-    { number: '10+', label: 'Portfolio Karya' }, { number: '100+', label: 'Jam Mengajar' },
-  ]
+  const roles: string[] = profile?.roles?.length > 0
+    ? profile.roles
+    : ['Educational Researcher', 'Arabic Language Researcher', 'Graphic Designer', 'Content Creator', 'Public Speaker']
+
+  const stats = profile?.stats?.length > 0
+    ? profile.stats
+    : [
+        { number: '3+', label: 'Jurnal Publikasi' },
+        { number: '5+', label: 'Tahun Pengalaman' },
+        { number: '10+', label: 'Portfolio Karya' },
+        { number: '100+', label: 'Jam Mengajar' },
+      ]
 
   useEffect(() => {
     if (!roles.length) return
@@ -52,20 +89,7 @@ export default function HomePage() {
   const bentoTitle = profile?.home_bento_research_title || 'Penelitian Bahasa Arab & Pendidikan Islam'
   const bentoDesc = profile?.home_bento_research_desc || 'Berfokus pada optimasi media pembelajaran bahasa Arab dan inovasi teknologi dalam pendidikan Islam modern.'
 
-  const PhotoBlock = () => (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <div style={{ position: 'relative', width: '240px', maxWidth: '100%' }}>
-        <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)', borderRadius: '24px' }} />
-        <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}>
-          {profile?.photo_url ? (
-            <img src={profile.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Profile" />
-          ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>👤</div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
+
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white' }}>
@@ -78,52 +102,88 @@ export default function HomePage() {
         <div className="page-container" style={{ paddingTop: '120px', paddingBottom: '80px', width: '100%' }}>
           <div className="hero-grid">
 
-            {/* TEXT SIDE */}
+            {/* TEXT */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '6px 16px', width: 'fit-content' }}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '999px', padding: '6px 16px', width: 'fit-content'
+                }}>
                 <span style={{ width: '6px', height: '6px', background: '#4ade80', borderRadius: '50%' }} />
-                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Researcher · Designer · Creator</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  Researcher · Designer · Creator
+                </span>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}>
                 <h1 className="h-hero" style={{ margin: 0 }}>
                   {firstName}<br />
-                  <span style={{ background: 'linear-gradient(135deg, #818cf8, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  <span style={{
+                    background: 'linear-gradient(135deg, #818cf8, #a78bfa)',
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+                  }}>
                     {lastName}
                   </span>
                 </h1>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} style={{ height: '32px', display: 'flex', alignItems: 'center' }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '18px' }}>{displayed}<span style={{ color: '#818cf8' }}>|</span></span>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                style={{ height: '32px', display: 'flex', alignItems: 'center' }}>
+                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '18px' }}>
+                  {displayed}<span style={{ color: '#818cf8' }}>|</span>
+                </span>
               </motion.div>
 
-              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
                 style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, maxWidth: '420px', fontSize: '15px' }}>
                 {profile?.bio || 'Menjembatani teori akademik dan praktik nyata dalam pendidikan Islam.'}
               </motion.p>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.6 }}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
                 style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <Link href="/portfolio" style={{ background: '#4f46e5', color: 'white', padding: '12px 24px', borderRadius: '999px', fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}>
+                <Link href="/portfolio" style={{
+                  background: '#4f46e5', color: 'white', padding: '12px 24px',
+                  borderRadius: '999px', fontSize: '14px', fontWeight: 500, textDecoration: 'none'
+                }}>
                   Lihat Portfolio →
                 </Link>
-                <a href={profile?.cv_url || '/about'} target={profile?.cv_url ? '_blank' : undefined}
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px 24px', borderRadius: '999px', fontSize: '14px', fontWeight: 500, textDecoration: 'none' }}>
+                <a
+                  href={profile?.cv_url || '/about'}
+                  target={profile?.cv_url ? '_blank' : undefined}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'white', padding: '12px 24px', borderRadius: '999px',
+                    fontSize: '14px', fontWeight: 500, textDecoration: 'none'
+                  }}>
                   Resume
                 </a>
               </motion.div>
 
-              {/* Foto tampil di sini KHUSUS MOBILE (di bawah tombol) */}
+              {/* Foto mobile */}
               <div className="hero-photo-mobile">
-                <PhotoBlock />
+                <PhotoBlock photoUrl={profile?.photo_url} />
               </div>
             </div>
 
-            {/* Foto tampil di sini KHUSUS DESKTOP (sebelah kanan) */}
+            {/* Foto desktop */}
             <div className="hero-photo-desktop">
-              <PhotoBlock />
+              <PhotoBlock photoUrl={profile?.photo_url} />
             </div>
 
           </div>
@@ -135,8 +195,16 @@ export default function HomePage() {
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div className="stats-grid">
             {stats.map((stat: any, i: number) => (
-              <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px', textAlign: 'center' }}>
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                style={{
+                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '16px', padding: '28px', textAlign: 'center'
+                }}>
                 <p style={{ fontSize: '36px', fontWeight: 700, color: 'white', margin: 0 }}>{stat.number}</p>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '6px' }}>{stat.label}</p>
               </motion.div>
@@ -148,14 +216,25 @@ export default function HomePage() {
       {/* BENTO */}
       <section style={{ padding: '0 24px 48px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: '32px' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            style={{ marginBottom: '32px' }}>
             <p style={{ color: '#818cf8', fontSize: '13px', fontWeight: 500, marginBottom: '8px' }}>Academic & Professional</p>
             <h2 className="h-section" style={{ color: 'white', margin: 0 }}>Ekosistem Karya</h2>
-            <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontSize: '14px' }}>Sorotan penelitian, desain, dan kompetensi utama.</p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontSize: '14px' }}>
+              Sorotan penelitian, desain, dan kompetensi utama.
+            </p>
           </motion.div>
 
           <div className="bento-top">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="card">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                 <div style={{ width: '32px', height: '32px', background: 'rgba(99,102,241,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>📄</div>
                 <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Research Highlights</span>
@@ -172,7 +251,12 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="card">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                 <div style={{ width: '32px', height: '32px', background: 'rgba(168,85,247,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>⚡</div>
                 <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Kompetensi</span>
@@ -186,14 +270,27 @@ export default function HomePage() {
           </div>
 
           <div className="bento-bottom">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="card">
-              <p style={{ color: '#818cf8', fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Latest Publication</p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="card">
+              <p style={{ color: '#818cf8', fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                Latest Publication
+              </p>
               {latestResearch ? (
                 <>
-                  <h4 style={{ color: 'white', fontWeight: 600, fontSize: '13px', lineHeight: 1.6, marginBottom: '8px' }}>{latestResearch.title}</h4>
-                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>{latestResearch.journal_name || 'Jurnal Publikasi'}</p>
+                  <h4 style={{ color: 'white', fontWeight: 600, fontSize: '13px', lineHeight: 1.6, marginBottom: '8px' }}>
+                    {latestResearch.title}
+                  </h4>
+                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>
+                    {latestResearch.journal_name || 'Jurnal Publikasi'}
+                  </p>
                   <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>{latestResearch.published_date ? new Date(latestResearch.published_date).getFullYear() : ''}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>
+                      {latestResearch.published_date ? new Date(latestResearch.published_date).getFullYear() : ''}
+                    </span>
                     <Link href="/research" style={{ color: '#818cf8', fontSize: '12px', textDecoration: 'none' }}>Lihat semua →</Link>
                   </div>
                 </>
@@ -202,7 +299,12 @@ export default function HomePage() {
               )}
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="card">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                 <div style={{ width: '32px', height: '32px', background: 'rgba(168,85,247,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>🚀</div>
                 <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Featured Portfolio</span>
@@ -218,9 +320,13 @@ export default function HomePage() {
                       </p>
                     </div>
                   </div>
-                )) : <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>Belum ada portfolio.</p>}
+                )) : (
+                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>Belum ada portfolio.</p>
+                )}
               </div>
-              <Link href="/portfolio" style={{ color: '#a78bfa', fontSize: '13px', textDecoration: 'none' }}>Explore All Projects →</Link>
+              <Link href="/portfolio" style={{ color: '#a78bfa', fontSize: '13px', textDecoration: 'none' }}>
+                Explore All Projects →
+              </Link>
             </motion.div>
           </div>
         </div>
@@ -229,17 +335,39 @@ export default function HomePage() {
       {/* CTA */}
       <section style={{ padding: '0 24px 80px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
-            style={{ background: 'linear-gradient(135deg, rgba(49,46,129,0.6), rgba(88,28,135,0.4))', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '24px', padding: '60px 24px', textAlign: 'center' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            style={{
+              background: 'linear-gradient(135deg, rgba(49,46,129,0.6), rgba(88,28,135,0.4))',
+              border: '1px solid rgba(99,102,241,0.2)',
+              borderRadius: '24px', padding: '60px 24px', textAlign: 'center'
+            }}>
             <h2 className="h-section" style={{ color: 'white', marginBottom: '16px' }}>{ctaTitle}</h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto 32px', fontSize: '15px' }}>{ctaDesc}</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto 32px', fontSize: '15px' }}>
+              {ctaDesc}
+            </p>
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/contact" style={{ background: '#4f46e5', color: 'white', padding: '14px 32px', borderRadius: '999px', fontWeight: 500, textDecoration: 'none', fontSize: '14px' }}>Mulai Diskusi</Link>
-              <Link href="/contact" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '14px 32px', borderRadius: '999px', fontWeight: 500, textDecoration: 'none', fontSize: '14px' }}>Jadwalkan Pertemuan</Link>
+              <Link href="/contact" style={{
+                background: '#4f46e5', color: 'white', padding: '14px 32px',
+                borderRadius: '999px', fontWeight: 500, textDecoration: 'none', fontSize: '14px'
+              }}>
+                Mulai Diskusi
+              </Link>
+              <Link href="/contact" style={{
+                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                color: 'white', padding: '14px 32px', borderRadius: '999px',
+                fontWeight: 500, textDecoration: 'none', fontSize: '14px'
+              }}>
+                Jadwalkan Pertemuan
+              </Link>
             </div>
           </motion.div>
         </div>
       </section>
+
     </div>
   )
 }
