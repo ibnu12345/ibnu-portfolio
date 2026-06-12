@@ -52,6 +52,26 @@ export default function HomePage() {
   const bentoTitle = profile?.home_bento_research_title || 'Penelitian Bahasa Arab & Pendidikan Islam'
   const bentoDesc = profile?.home_bento_research_desc || 'Berfokus pada optimasi media pembelajaran bahasa Arab dan inovasi teknologi dalam pendidikan Islam modern.'
 
+  const PhotoBlock = () => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.7, delay: 0.3 }}
+      style={{ display: 'flex', justifyContent: 'center' }}
+    >
+      <div style={{ position: 'relative', width: '240px', maxWidth: '100%' }}>
+        <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)', borderRadius: '24px' }} />
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}>
+          {profile?.photo_url ? (
+            <img src={profile.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Profile" />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>👤</div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  )
+
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white' }}>
 
@@ -62,6 +82,8 @@ export default function HomePage() {
       }}>
         <div className="page-container" style={{ paddingTop: '120px', paddingBottom: '80px', width: '100%' }}>
           <div className="hero-grid">
+
+            {/* TEXT SIDE */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '6px 16px', width: 'fit-content' }}>
@@ -97,24 +119,18 @@ export default function HomePage() {
                   Resume
                 </a>
               </motion.div>
+
+              {/* Foto tampil di sini KHUSUS MOBILE (di bawah tombol) */}
+              <div className="hero-photo-mobile">
+                <PhotoBlock />
+              </div>
             </div>
 
-            {/* Photo */}
-            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.3 }}
-              className="hero-photo" style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>
-                <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)', borderRadius: '24px' }} />
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}>
-                  {profile?.photo_url ? (
-                    <img src={profile.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Profile" />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                      <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>👤</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
+            {/* Foto tampil di sini KHUSUS DESKTOP (sebelah kanan) */}
+            <div className="hero-photo-desktop">
+              <PhotoBlock />
+            </div>
+
           </div>
         </div>
       </section>

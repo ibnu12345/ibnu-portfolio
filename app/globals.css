@@ -66,9 +66,22 @@ body {
 @media (max-width: 768px) {
   .hero-grid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 32px;
   }
-  .hero-grid .hero-photo { order: -1; }
+}
+
+/* Hero photo — desktop: tampil di kolom kanan, mobile: tersembunyi */
+.hero-photo-desktop {
+  display: flex;
+  justify-content: center;
+}
+/* Hero photo — mobile: tampil di bawah tombol, desktop: tersembunyi */
+.hero-photo-mobile {
+  display: none;
+}
+@media (max-width: 768px) {
+  .hero-photo-desktop { display: none; }
+  .hero-photo-mobile { display: block; }
 }
 
 /* Two column grid */

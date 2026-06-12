@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 const menuItems = [
   { name: 'Dashboard', href: '/admin', icon: '📊' },
   { name: 'Profile', href: '/admin/profile', icon: '👤' },
-  { name: 'About', href: '/admin/about', icon: '📖' },
+  { name: 'About (Edu & Org)', href: '/admin/about', icon: '📖' },
   { name: 'Research', href: '/admin/research', icon: '🔬' },
   { name: 'Portfolio', href: '/admin/portfolio', icon: '💼' },
   { name: 'Skills', href: '/admin/skills', icon: '⚡' },
@@ -18,65 +18,64 @@ const menuItems = [
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      setSidebarOpen(!mobile) // desktop: open by default, mobile: closed
+    }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Di mobile, sidebar default tertutup
-  useEffect(() => {
-    if (isMobile) setSidebarOpen(false)
-  }, [isMobile])
-
   const handleLogout = () => {
-    // Implement logout jika perlu
     router.push('/')
   }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
-      {/* Overlay untuk mobile */}
+
+      {/* Overlay mobile */}
       {isMobile && sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40
-          }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40 }}
         />
       )}
 
       {/* Sidebar */}
       <aside style={{
-        position: isMobile ? 'fixed' : 'sticky',
+        position: 'fixed',
         top: 0,
-        left: 0,
-        width: sidebarOpen ? '260px' : '70px',
+        left: isMobile ? (sidebarOpen ? 0 : '-260px') : 0,
+        width: isMobile ? '260px' : (sidebarOpen ? '220px' : '64px'),
         height: '100vh',
         background: 'rgba(15,15,20,0.98)',
         borderRight: '1px solid rgba(255,255,255,0.07)',
-        transition: 'width 0.3s ease',
+        transition: 'left 0.3s ease, width 0.3s ease',
         zIndex: 50,
         overflowX: 'hidden',
+        overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
       }}>
-        {/* Logo & Toggle Button */}
+        {/* Logo & Toggle */}
         <div style={{
-          padding: '20px 16px',
+          padding: '16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
+          minHeight: '60px',
         }}>
-          {sidebarOpen && (
-            <span style={{ fontWeight: 700, fontSize: '18px', color: 'white' }}>
+          {(sidebarOpen || isMobile) && (
+            <span style={{ fontWeight: 700, fontSize: '16px', color: 'white', whiteSpace: 'nowrap' }}>
               Admin<span style={{ color: '#818cf8' }}>Panel</span>
             </span>
           )}
@@ -86,80 +85,113 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               background: 'rgba(255,255,255,0.05)',
               border: 'none',
               borderRadius: '8px',
-              padding: '8px',
+              padding: '6px',
               cursor: 'pointer',
               color: 'white',
-              fontSize: '16px',
+              fontSize: '14px',
               width: '32px',
               height: '32px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
+              marginLeft: 'auto',
             }}
           >
             {sidebarOpen ? '◀' : '▶'}
           </button>
         </div>
 
-        {/* Menu Items */}
-        <nav style={{ flex: 1, padding: '16px 8px' }}>
+        {/* Menu */}
+        <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto' }}>
           {menuItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => isMobile && setSidebarOpen(false)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '10px',
                 padding: '10px 12px',
-                marginBottom: '4px',
+                marginBottom: '2px',
                 borderRadius: '10px',
-                background: pathname === item.href ? 'rgba(79,70,229,0.15)' : 'transparent',
+                background: pathname === item.href ? 'rgba(79,70,229,0.2)' : 'transparent',
                 color: pathname === item.href ? '#818cf8' : 'rgba(255,255,255,0.6)',
                 textDecoration: 'none',
-                transition: 'all 0.2s',
-                fontSize: '14px',
+                fontSize: '13px',
                 whiteSpace: 'nowrap',
+                overflow: 'hidden',
               }}
             >
-              <span style={{ fontSize: '18px' }}>{item.icon}</span>
-              {sidebarOpen && <span>{item.name}</span>}
+              <span style={{ fontSize: '18px', flexShrink: 0 }}>{item.icon}</span>
+              {(sidebarOpen || isMobile) && <span>{item.name}</span>}
             </Link>
           ))}
         </nav>
 
-        {/* Logout Button */}
-        <div style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        {/* Bottom links */}
+        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <Link
+            href="/"
+            onClick={() => isMobile && setSidebarOpen(false)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '10px 12px', borderRadius: '10px',
+              color: 'rgba(255,255,255,0.5)', textDecoration: 'none',
+              fontSize: '13px', whiteSpace: 'nowrap', marginBottom: '2px',
+            }}
+          >
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>🌐</span>
+            {(sidebarOpen || isMobile) && <span>Lihat Website</span>}
+          </Link>
           <button
             onClick={handleLogout}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              width: '100%',
-              padding: '10px 12px',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '10px',
-              color: 'rgba(255,255,255,0.5)',
-              cursor: 'pointer',
-              fontSize: '14px',
+              display: 'flex', alignItems: 'center', gap: '10px',
+              width: '100%', padding: '10px 12px',
+              background: 'transparent', border: 'none', borderRadius: '10px',
+              color: '#f87171', cursor: 'pointer', fontSize: '13px',
+              whiteSpace: 'nowrap',
             }}
           >
-            <span>🚪</span>
-            {sidebarOpen && <span>Logout</span>}
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>🚪</span>
+            {(sidebarOpen || isMobile) && <span>Logout</span>}
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Content — margin kiri mengikuti lebar sidebar (desktop only) */}
       <main style={{
         flex: 1,
-        padding: isMobile ? '20px' : '32px',
-        overflowY: 'auto',
-        marginLeft: isMobile && sidebarOpen ? '260px' : 0,
+        marginLeft: isMobile ? 0 : (sidebarOpen ? '220px' : '64px'),
         transition: 'margin-left 0.3s ease',
+        padding: isMobile ? '16px' : '32px',
+        overflowY: 'auto',
+        minWidth: 0,
       }}>
+        {/* Mobile top bar */}
+        {isMobile && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            marginBottom: '20px', padding: '10px 0',
+          }}>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px', padding: '8px 10px',
+                color: 'white', cursor: 'pointer', fontSize: '16px',
+              }}
+            >
+              ☰
+            </button>
+            <span style={{ fontWeight: 700, color: 'white', fontSize: '16px' }}>
+              Admin<span style={{ color: '#818cf8' }}>Panel</span>
+            </span>
+          </div>
+        )}
         {children}
       </main>
     </div>
