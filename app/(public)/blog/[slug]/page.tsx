@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { supabase } from '../../../lib/supabase'
-import { useIsMobile } from '../../../hooks/useIsMobile'
 
 export default function BlogDetailPage() {
   const { slug } = useParams()
@@ -12,7 +11,6 @@ export default function BlogDetailPage() {
   const [post, setPost] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [related, setRelated] = useState<any[]>([])
-  const isMobile = useIsMobile()
 
   useEffect(() => {
     if (!slug) return
@@ -21,14 +19,11 @@ export default function BlogDetailPage() {
         if (!data) { router.push('/blog'); return }
         setPost(data)
         setLoading(false)
-        // Load related posts
         supabase.from('blog_post').select('id, title, slug, thumbnail_url, category, published_date')
           .eq('is_published', true).neq('slug', slug).limit(3)
           .then(({ data: rel }) => setRelated(rel || []))
       })
   }, [slug])
-
-  const px = isMobile ? '20px' : '64px'
 
   if (loading) return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', paddingTop: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -40,19 +35,28 @@ export default function BlogDetailPage() {
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white', paddingTop: '80px' }}>
+      <style>{`
+        .blog-content-wrap { max-width: 800px; margin: 0 auto; padding: 0 64px 80px; }
+        .blog-related-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+        .blog-h1 { font-size: 40px; }
+        @media (max-width: 768px) {
+          .blog-content-wrap { padding: 0 20px 60px; }
+          .blog-related-grid { grid-template-columns: 1fr; }
+          .blog-h1 { font-size: 26px; }
+        }
+      `}</style>
 
       {/* Thumbnail Hero */}
       {post.thumbnail_url && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}
-          style={{ width: '100%', maxHeight: '480px', overflow: 'hidden', position: 'relative' }}>
+          style={{ width: '100%', overflow: 'hidden', position: 'relative' }}>
           <img src={post.thumbnail_url} alt={post.title}
-            style={{ width: '100%', height: isMobile ? '240px' : '480px', objectFit: 'cover' }} />
+            style={{ width: '100%', maxHeight: '480px', objectFit: 'cover', display: 'block' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, #0a0a0f)' }} />
         </motion.div>
       )}
 
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: `0 ${px} 80px` }}>
-
+      <div className="blog-content-wrap">
         {/* Back */}
         <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}
           style={{ marginTop: post.thumbnail_url ? '0' : '40px', marginBottom: '32px' }}>
@@ -76,7 +80,7 @@ export default function BlogDetailPage() {
               </span>
             ))}
           </div>
-          <h1 style={{ fontSize: isMobile ? '26px' : '40px', fontWeight: 800, lineHeight: 1.2, margin: '0 0 16px', color: 'white' }}>
+          <h1 className="blog-h1" style={{ fontWeight: 800, lineHeight: 1.2, margin: '0 0 16px', color: 'white' }}>
             {post.title}
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>
@@ -84,26 +88,21 @@ export default function BlogDetailPage() {
           </p>
         </motion.div>
 
-        {/* Divider */}
         <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.5, delay: 0.2 }}
           style={{ height: '1px', background: 'rgba(255,255,255,0.07)', marginBottom: '40px', transformOrigin: 'left' }} />
 
         {/* Content */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-          <div style={{
-            color: 'rgba(255,255,255,0.75)', fontSize: '16px', lineHeight: 1.9,
-            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-          }}>
-            {post.content}
-          </div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
+          style={{ color: 'rgba(255,255,255,0.75)', fontSize: '16px', lineHeight: 1.9, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          {post.content}
         </motion.div>
 
-        {/* Related posts */}
+        {/* Related */}
         {related.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             style={{ marginTop: '64px', paddingTop: '48px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <h3 style={{ color: 'white', fontSize: '20px', fontWeight: 700, marginBottom: '24px' }}>Artikel Lainnya</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: '16px' }}>
+            <div className="blog-related-grid">
               {related.map(rel => (
                 <Link key={rel.id} href={`/blog/${rel.slug}`} style={{ textDecoration: 'none' }}>
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', transition: 'border-color 0.2s' }}
