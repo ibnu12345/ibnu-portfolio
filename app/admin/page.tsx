@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Sidebar from '../components/admin/Sidebar'
 import { supabase } from '../lib/supabase'
 
 export default function AdminDashboard() {
@@ -45,40 +44,37 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className='admin-layout'>
-      <Sidebar />
-      <main className='admin-main'>
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'white', margin: 0 }}>Dashboard</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '6px', fontSize: '14px' }}>Selamat datang di Admin Panel ibnusp_</p>
-        </div>
+    <div>
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'white', margin: 0 }}>Dashboard</h1>
+        <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '6px', fontSize: '14px' }}>Selamat datang di Admin Panel ibnusp_</p>
+      </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '40px' }}>
-          {cards.map(card => (
-            <a key={card.label} href={card.href} style={{ textDecoration: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'block', transition: 'border-color 0.2s' }}>
-              <div style={{ fontSize: '28px', marginBottom: '12px' }}>{card.icon}</div>
-              <p style={{ fontSize: '32px', fontWeight: 700, color: card.color, margin: '0 0 4px' }}>{card.value}</p>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', margin: 0 }}>{card.label}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', gap: '16px', marginBottom: '40px' }}>
+        {cards.map(card => (
+          <a key={card.label} href={card.href} style={{ textDecoration: 'none', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'block', transition: 'border-color 0.2s' }}>
+            <div style={{ fontSize: '28px', marginBottom: '12px' }}>{card.icon}</div>
+            <p style={{ fontSize: '32px', fontWeight: 700, color: card.color, margin: '0 0 4px' }}>{card.value}</p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', margin: 0 }}>{card.label}</p>
+          </a>
+        ))}
+      </div>
+
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'white', marginBottom: '16px' }}>Quick Actions</h2>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          {[
+            { label: '+ Tambah Research', href: '/admin/research' },
+            { label: '+ Tambah Portfolio', href: '/admin/portfolio' },
+            { label: '+ Tulis Blog', href: '/admin/blog' },
+            { label: '+ Upload Sertifikat', href: '/admin/certificates' },
+          ].map(a => (
+            <a key={a.label} href={a.href} style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', textDecoration: 'none' }}>
+              {a.label}
             </a>
           ))}
         </div>
-
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'white', marginBottom: '16px' }}>Quick Actions</h2>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            {[
-              { label: '+ Tambah Research', href: '/admin/research' },
-              { label: '+ Tambah Portfolio', href: '/admin/portfolio' },
-              { label: '+ Tulis Blog', href: '/admin/blog' },
-              { label: '+ Upload Sertifikat', href: '/admin/certificates' },
-            ].map(a => (
-              <a key={a.label} href={a.href} style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', textDecoration: 'none' }}>
-                {a.label}
-              </a>
-            ))}
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   )
 }
