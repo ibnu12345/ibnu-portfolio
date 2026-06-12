@@ -53,12 +53,7 @@ export default function HomePage() {
   const bentoDesc = profile?.home_bento_research_desc || 'Berfokus pada optimasi media pembelajaran bahasa Arab dan inovasi teknologi dalam pendidikan Islam modern.'
 
   const PhotoBlock = () => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.7, delay: 0.3 }}
-      style={{ display: 'flex', justifyContent: 'center' }}
-    >
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div style={{ position: 'relative', width: '240px', maxWidth: '100%' }}>
         <div style={{ position: 'absolute', inset: '-20px', background: 'radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)', borderRadius: '24px' }} />
         <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}>
@@ -69,7 +64,7 @@ export default function HomePage() {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 
   return (

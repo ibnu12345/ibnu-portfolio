@@ -170,27 +170,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         overflowY: 'auto',
         minWidth: 0,
       }}>
-        {/* Mobile top bar */}
-        {isMobile && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '12px',
-            marginBottom: '20px', padding: '10px 0',
-          }}>
-            <button
-              onClick={() => setSidebarOpen(true)}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px', padding: '8px 10px',
-                color: 'white', cursor: 'pointer', fontSize: '16px',
-              }}
-            >
-              ☰
-            </button>
-            <span style={{ fontWeight: 700, color: 'white', fontSize: '16px' }}>
-              Admin<span style={{ color: '#818cf8' }}>Panel</span>
-            </span>
-          </div>
+        {/* Tombol ☰ fixed pojok kiri atas, hanya muncul saat sidebar tertutup di mobile */}
+        {isMobile && !sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            style={{
+              position: 'fixed',
+              top: '12px',
+              left: '12px',
+              zIndex: 45,
+              background: 'rgba(15,15,20,0.95)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px',
+              padding: '8px 10px',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '16px',
+              lineHeight: 1,
+            }}
+          >
+            ☰
+          </button>
         )}
         {children}
       </main>
