@@ -3,13 +3,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { supabase } from '../../lib/supabase'
-import { useIsMobile } from '../../hooks/useIsMobile'
 
 export default function BlogPage() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const isMobile = useIsMobile()
 
   useEffect(() => {
     supabase.from('blog_post').select('*').eq('is_published', true).order('published_date', { ascending: false })
@@ -17,17 +15,16 @@ export default function BlogPage() {
   }, [])
 
   const filtered = items.filter(i => i.title?.toLowerCase().includes(search.toLowerCase()))
-  const px = isMobile ? '20px' : '64px'
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white', paddingTop: '100px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: `0 ${px} 80px` }}>
+      <div className="page-container">
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
           style={{ marginBottom: '40px' }}>
           <p style={{ color: '#818cf8', fontSize: '13px', fontWeight: 500, marginBottom: '10px' }}>Blog</p>
-          <h1 style={{ fontSize: isMobile ? '32px' : '48px', fontWeight: 800, margin: '0 0 14px' }}>Artikel & Tulisan</h1>
+          <h1 className="h-page" style={{ margin: '0 0 14px' }}>Artikel & Tulisan</h1>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', maxWidth: '520px', lineHeight: 1.7 }}>
             Pemikiran, riset, dan pengalaman dalam dunia pendidikan dan penelitian.
           </p>
@@ -42,9 +39,9 @@ export default function BlogPage() {
         </motion.div>
 
         {loading && (
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(340px,1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: '20px' }}>
             {[1,2,3].map(i => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', height: '300px', animation: 'pulse 1.5s infinite' }} />
+              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', height: '300px' }} />
             ))}
           </div>
         )}
@@ -58,7 +55,7 @@ export default function BlogPage() {
         )}
 
         {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(340px,1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: '20px' }}>
           {filtered.map((item, i) => (
             <motion.div
               key={item.id}
@@ -79,7 +76,6 @@ export default function BlogPage() {
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = 'rgba(99,102,241,0.4)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'}
                 >
-                  {/* Thumbnail */}
                   {item.thumbnail_url ? (
                     <div style={{ width: '100%', height: '200px', overflow: 'hidden' }}>
                       <img src={item.thumbnail_url} alt={item.title}
@@ -95,7 +91,6 @@ export default function BlogPage() {
                   )}
 
                   <div style={{ padding: '20px' }}>
-                    {/* Tags */}
                     <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
                       {item.category && (
                         <span style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontSize: '11px', padding: '3px 10px', borderRadius: '999px', fontWeight: 500 }}>
