@@ -20,13 +20,17 @@ export default function AdminPortfolio() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState<any[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<any>(empty)
   const [saving, setSaving] = useState(false)
   const [uploadingGallery, setUploadingGallery] = useState(false)
   const [newLink, setNewLink] = useState('')
+  const [newCatInput, setNewCatInput] = useState('')
+  const [showNewCat, setShowNewCat] = useState(false)
+  const [addingCat, setAddingCat] = useState(false)
 
-  useEffect(() => { checkAuth(); load() }, [])
+  useEffect(() => { checkAuth(); load(); loadCategories() }, [])
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession()
@@ -39,22 +43,65 @@ export default function AdminPortfolio() {
     setItems(data || [])
   }
 
+  async function loadCategories() {
+    const { data } = await supabase.from('portfolio_categories').select('name').order('name')
+    setCategories((data || []).map((r: any) => r.name as string))
+  }
+
+  async function handleAddCategory() {
+    const name = newCatInput.trim()
+    if (!name) return
+    setAddingCat(true)
+    const { error } = await supabase.from('portfolio_categories').insert({ name })
+    if (!error) {
+      await loadCategories()
+      setForm((p: any) => ({ ...p, category: name }))
+      setNewCatInput('')
+      setShowNewCat(false)
+    }
+    setAddingCat(false)
+  }
+
+  async function handleDeleteCategory(name: string) {
+    if (!confirm(`Hapus kategori "${name}"?`)) return
+    await supabase.from('portfolio_categories').delete().eq('name', name)
+    await loadCategories()
+    if (form.category === name) setForm((p: any) => ({ ...p, category: '' }))
+  }
+
   async function handleSave() {
     if (!form.title) return
     setSaving(true)
     const payload = {
-      ...form,
-      tags: typeof form.tags === 'string' ? form.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : form.tags,
+      title: form.title,
       slug: form.slug || generateSlug(form.title),
+      description: form.description || '',
+      category: form.category || '',
+      thumbnail_url: form.thumbnail_url || '',
+      gallery_urls: form.gallery_urls || [],
+      youtube_url: form.youtube_url || '',
+      pdf_url: form.pdf_url || '',
+      external_urls: form.external_urls || [],
+      tags: typeof form.tags === 'string'
+        ? form.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+        : (form.tags || []),
+      is_featured: form.is_featured || false,
     }
-    if (form.id) await supabase.from('portfolio').update(payload).eq('id', form.id)
-    else await supabase.from('portfolio').insert(payload)
-    setSaving(false); setShowForm(false); setForm(empty); load()
+    if (form.id) {
+      await supabase.from('portfolio').update(payload).eq('id', form.id)
+    } else {
+      await supabase.from('portfolio').insert(payload)
+    }
+    setSaving(false)
+    setShowForm(false)
+    setForm(empty)
+    load()
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Hapus portfolio ini?')) return
-    await supabase.from('portfolio').delete().eq('id', id); load()
+    await supabase.from('portfolio').delete().eq('id', id)
+    load()
   }
 
   async function handleThumb(e: React.ChangeEvent<HTMLInputElement>) {
@@ -113,7 +160,10 @@ export default function AdminPortfolio() {
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'white', margin: 0 }}>Portfolio</h1>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginTop: '4px' }}>{items.length} karya</p>
         </div>
-        <button onClick={() => { setForm(empty); setShowForm(true) }} style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}>+ Tambah Portfolio</button>
+        <button onClick={() => { setForm(empty); setShowForm(true) }}
+          style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}>
+          + Tambah Portfolio
+        </button>
       </div>
 
       {showForm && (
@@ -122,39 +172,82 @@ export default function AdminPortfolio() {
             <h2 style={{ color: 'white', fontSize: '18px', fontWeight: 600, marginBottom: '24px' }}>{form.id ? 'Edit' : 'Tambah'} Portfolio</h2>
 
             <div style={{ display: 'grid', gap: '16px' }}>
+
+              {/* Judul */}
               <div>
                 <label style={labelStyle}>Judul *</label>
-                <input value={form.title} onChange={e => setForm((p: any) => ({ ...p, title: e.target.value, slug: generateSlug(e.target.value) }))} style={inputStyle} placeholder="Nama proyek..." />
+                <input value={form.title} onChange={e => setForm((p: any) => ({ ...p, title: e.target.value, slug: generateSlug(e.target.value) }))}
+                  style={inputStyle} placeholder="Nama proyek..." />
               </div>
 
+              {/* Slug */}
               <div>
                 <label style={labelStyle}>Slug (auto dari judul)</label>
-                <input value={form.slug} onChange={e => setForm((p: any) => ({ ...p, slug: e.target.value }))} style={{ ...inputStyle, color: 'rgba(255,255,255,0.5)' }} />
+                <input value={form.slug} onChange={e => setForm((p: any) => ({ ...p, slug: e.target.value }))}
+                  style={{ ...inputStyle, color: 'rgba(255,255,255,0.5)' }} />
               </div>
 
+              {/* Kategori + Tags */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={labelStyle}>Kategori</label>
-                  <select value={form.category || ''} onChange={e => setForm((p: any) => ({ ...p, category: e.target.value }))}
-                    style={{ ...inputStyle, background: '#1a1a2e' }}>
-                    <option value="">Pilih Kategori</option>
-                    {['Research', 'Design', 'Content Creation', 'Public Speaking', 'Organization'].map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select value={form.category || ''} onChange={e => setForm((p: any) => ({ ...p, category: e.target.value }))}
+                      style={{ ...inputStyle, background: '#1a1a2e', flex: 1 }}>
+                      <option value="">Pilih Kategori</option>
+                      {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <button onClick={() => setShowNewCat(v => !v)} title="Kelola kategori"
+                      style={{ background: showNewCat ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', borderRadius: '8px', padding: '0 12px', cursor: 'pointer', fontSize: '18px', flexShrink: 0 }}>
+                      {showNewCat ? '×' : '+'}
+                    </button>
+                  </div>
+
+                  {showNewCat && (
+                    <div style={{ marginTop: '8px', background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '10px', padding: '12px' }}>
+                      <p style={{ color: '#818cf8', fontSize: '11px', marginBottom: '8px', fontWeight: 500 }}>TAMBAH KATEGORI BARU</p>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                        <input value={newCatInput} onChange={e => setNewCatInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+                          placeholder="Nama kategori..." style={{ ...inputStyle, flex: 1, padding: '8px 10px', fontSize: '13px' }} />
+                        <button onClick={handleAddCategory} disabled={addingCat || !newCatInput.trim()}
+                          style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer', flexShrink: 0, opacity: (!newCatInput.trim() || addingCat) ? 0.5 : 1 }}>
+                          {addingCat ? '...' : 'Simpan'}
+                        </button>
+                      </div>
+                      {categories.length > 0 && (
+                        <>
+                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginBottom: '6px' }}>Kategori tersedia (klik × untuk hapus):</p>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {categories.map(cat => (
+                              <span key={cat} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '3px 8px', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                {cat}
+                                <button onClick={() => handleDeleteCategory(cat)}
+                                  style={{ background: 'transparent', border: 'none', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', fontSize: '12px', padding: '0 0 0 2px', lineHeight: 1 }}>×</button>
+                              </span>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
+
                 <div>
                   <label style={labelStyle}>Tags (pisah koma)</label>
-                  <input value={form.tags || ''} onChange={e => setForm((p: any) => ({ ...p, tags: e.target.value }))} style={inputStyle} placeholder="tag1, tag2" />
+                  <input value={form.tags || ''} onChange={e => setForm((p: any) => ({ ...p, tags: e.target.value }))}
+                    style={inputStyle} placeholder="tag1, tag2" />
                 </div>
               </div>
 
+              {/* Deskripsi */}
               <div>
                 <label style={labelStyle}>Deskripsi</label>
-                <textarea value={form.description || ''} onChange={e => setForm((p: any) => ({ ...p, description: e.target.value }))} rows={4}
-                  style={{ ...inputStyle, resize: 'vertical' }} placeholder="Ceritakan tentang proyek ini..." />
+                <textarea value={form.description || ''} onChange={e => setForm((p: any) => ({ ...p, description: e.target.value }))}
+                  rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Ceritakan tentang proyek ini..." />
               </div>
 
+              {/* Thumbnail */}
               <div>
                 <label style={labelStyle}>Thumbnail Utama</label>
                 <input type="file" accept="image/*" onChange={handleThumb} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }} />
@@ -167,6 +260,7 @@ export default function AdminPortfolio() {
                 )}
               </div>
 
+              {/* Gallery */}
               <div>
                 <label style={labelStyle}>Foto Gallery (bisa banyak)</label>
                 <label style={{ display: 'inline-block', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', marginBottom: '12px' }}>
@@ -186,31 +280,42 @@ export default function AdminPortfolio() {
                 )}
               </div>
 
+              {/* YouTube */}
               <div>
                 <label style={labelStyle}>YouTube URL</label>
-                <input value={form.youtube_url || ''} onChange={e => setForm((p: any) => ({ ...p, youtube_url: e.target.value }))} style={inputStyle} placeholder="https://youtube.com/watch?v=..." />
+                <input value={form.youtube_url || ''} onChange={e => setForm((p: any) => ({ ...p, youtube_url: e.target.value }))}
+                  style={inputStyle} placeholder="https://youtube.com/watch?v=..." />
               </div>
 
+              {/* PDF */}
               <div>
                 <label style={labelStyle}>PDF URL</label>
-                <input value={form.pdf_url || ''} onChange={e => setForm((p: any) => ({ ...p, pdf_url: e.target.value }))} style={inputStyle} placeholder="https://..." />
+                <input value={form.pdf_url || ''} onChange={e => setForm((p: any) => ({ ...p, pdf_url: e.target.value }))}
+                  style={inputStyle} placeholder="https://..." />
               </div>
 
+              {/* External Links */}
               <div>
                 <label style={labelStyle}>Link Lainnya (TikTok, Instagram, Drive, dll)</label>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                  <input value={newLink} onChange={e => setNewLink(e.target.value)} onKeyDown={e => e.key === 'Enter' && addLink()}
+                  <input value={newLink} onChange={e => setNewLink(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addLink()}
                     style={{ ...inputStyle, flex: 1 }} placeholder="https://tiktok.com/... atau link apapun" />
-                  <button onClick={addLink} style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 16px', cursor: 'pointer', fontSize: '13px', flexShrink: 0 }}>+ Tambah</button>
+                  <button onClick={addLink}
+                    style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 16px', cursor: 'pointer', fontSize: '13px', flexShrink: 0 }}>
+                    + Tambah
+                  </button>
                 </div>
                 {(form.external_urls || []).map((url: string, i: number) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px 12px', marginBottom: '6px' }}>
                     <span style={{ flex: 1, color: 'rgba(255,255,255,0.6)', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</span>
-                    <button onClick={() => removeLink(i)} style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '14px', flexShrink: 0 }}>✕</button>
+                    <button onClick={() => removeLink(i)}
+                      style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '14px', flexShrink: 0 }}>✕</button>
                   </div>
                 ))}
               </div>
 
+              {/* Featured */}
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <input type="checkbox" checked={form.is_featured} onChange={e => setForm((p: any) => ({ ...p, is_featured: e.target.checked }))} />
                 <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Featured di halaman Home</span>
@@ -218,10 +323,14 @@ export default function AdminPortfolio() {
             </div>
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-              <button onClick={handleSave} disabled={saving} style={{ flex: 1, background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+              <button onClick={handleSave} disabled={saving}
+                style={{ flex: 1, background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
                 {saving ? 'Menyimpan...' : 'Simpan'}
               </button>
-              <button onClick={() => setShowForm(false)} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>Batal</button>
+              <button onClick={() => setShowForm(false)}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>
+                Batal
+              </button>
             </div>
           </div>
         </div>
