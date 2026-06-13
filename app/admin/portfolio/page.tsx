@@ -91,7 +91,18 @@ export default function AdminPortfolio() {
       ...form,
       tags: typeof form.tags === 'string' ? form.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : form.tags,
       slug: form.slug || generateSlug(form.title),
-      updated_at: new Date().toISOString()
+      async function handleSave() {
+  if (!form.title) return
+  setSaving(true)
+  const payload = {
+    ...form,
+    tags: typeof form.tags === 'string' ? form.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : form.tags,
+    slug: form.slug || generateSlug(form.title),
+  }
+  if (form.id) await supabase.from('portfolio').update(payload).eq('id', form.id)
+  else await supabase.from('portfolio').insert(payload)
+  setSaving(false); setShowForm(false); setForm(empty); load()
+}
     }
     if (form.id) await supabase.from('portfolio').update(payload).eq('id', form.id)
     else await supabase.from('portfolio').insert(payload)
