@@ -44,8 +44,23 @@ export default function AdminPortfolio() {
   }
 
   async function loadCategories() {
-    const { data } = await supabase.from('portfolio_categories').select('name').order('name')
-    setCategories((data || []).map((r: any) => r.name))
+    // Ambil dari tabel kategori
+    const { data: catData } = await supabase.from('portfolio_categories').select('name')
+    const fromTable = (catData || []).map((r: any) => r.name as string)
+
+    // Ambil kategori yang sudah dipakai di portfolio (yang belum ada di tabel)
+    const { data: portData } = await supabase.from('portfolio').select('category').not('category', 'is', null).neq('category', '')
+    const fromPortfolio = [...new Set((portData || []).map((r: any) => r.category as string).filter(Boolean))]
+    const missing = fromPortfolio.filter(c => !fromTable.includes(c))
+
+    // Auto-insert kategori yang belum ada di tabel
+    if (missing.length > 0) {
+      await supabase.from('portfolio_categories').insert(missing.map(name => ({ name })))
+    }
+
+    // Gabungkan & sort
+    const all = [...new Set([...fromTable, ...missing])].sort()
+    setCategories(all)
   }
 
   async function handleAddCategory() {
