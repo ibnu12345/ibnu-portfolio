@@ -4,17 +4,24 @@ import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const categories = ['Semua', 'Research', 'Design', 'Content Creation', 'Public Speaking', 'Organization']
-
 export default function PortfolioPage() {
   const [items, setItems] = useState<any[]>([])
   const [filtered, setFiltered] = useState<any[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [active, setActive] = useState('Semua')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.from('portfolio').select('*').order('created_at', { ascending: false })
-      .then(({ data }) => { setItems(data || []); setFiltered(data || []); setLoading(false) })
+    Promise.all([
+      supabase.from('portfolio').select('*').order('created_at', { ascending: false }),
+      supabase.from('portfolio_categories').select('name').order('name'),
+    ]).then(([{ data: portfolios }, { data: cats }]) => {
+      const list = portfolios || []
+      setItems(list)
+      setFiltered(list)
+      setCategories((cats || []).map((r: any) => r.name))
+      setLoading(false)
+    })
   }, [])
 
   function filter(cat: string) {
@@ -33,11 +40,17 @@ export default function PortfolioPage() {
           </p>
         </motion.div>
 
-        {/* Filter tabs */}
+        {/* Filter tabs - dinamis dari DB */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '40px', flexWrap: 'wrap' }}>
-          {categories.map(cat => (
+          {['Semua', ...categories].map(cat => (
             <motion.button key={cat} onClick={() => filter(cat)} whileTap={{ scale: 0.95 }}
-              style={{ background: active === cat ? '#4f46e5' : 'rgba(255,255,255,0.05)', border: `1px solid ${active === cat ? '#4f46e5' : 'rgba(255,255,255,0.1)'}`, color: active === cat ? 'white' : 'rgba(255,255,255,0.5)', padding: '8px 18px', borderRadius: '999px', fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s' }}>
+              style={{
+                background: active === cat ? '#4f46e5' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${active === cat ? '#4f46e5' : 'rgba(255,255,255,0.1)'}`,
+                color: active === cat ? 'white' : 'rgba(255,255,255,0.5)',
+                padding: '8px 18px', borderRadius: '999px', fontSize: '13px',
+                cursor: 'pointer', transition: 'all 0.2s',
+              }}>
               {cat}
             </motion.button>
           ))}
@@ -45,14 +58,14 @@ export default function PortfolioPage() {
 
         {loading && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
-            {[1,2,3].map(i => <div key={i} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', height: '280px' }} />)}
+            {[1, 2, 3].map(i => <div key={i} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', height: '280px' }} />)}
           </div>
         )}
 
         {!loading && filtered.length === 0 && (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: 'rgba(255,255,255,0.3)' }}>
             <p style={{ fontSize: '48px', marginBottom: '16px' }}>🎨</p>
-            <p>Belum ada portfolio.</p>
+            <p>Belum ada portfolio{active !== 'Semua' ? ` dalam kategori "${active}"` : ''}.</p>
           </div>
         )}
 
@@ -77,7 +90,6 @@ export default function PortfolioPage() {
                           {item.category}
                         </span>
                       )}
-                      {/* Badge media type */}
                       <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '4px' }}>
                         {item.youtube_url && <span style={{ background: 'rgba(255,0,0,0.8)', color: 'white', fontSize: '10px', padding: '3px 7px', borderRadius: '999px' }}>▶ YT</span>}
                         {item.external_urls?.length > 0 && <span style={{ background: 'rgba(99,102,241,0.8)', color: 'white', fontSize: '10px', padding: '3px 7px', borderRadius: '999px' }}>🔗</span>}

@@ -20,13 +20,17 @@ export default function AdminPortfolio() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState<any[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<any>(empty)
   const [saving, setSaving] = useState(false)
   const [uploadingGallery, setUploadingGallery] = useState(false)
   const [newLink, setNewLink] = useState('')
+  const [newCatInput, setNewCatInput] = useState('')
+  const [showNewCat, setShowNewCat] = useState(false)
+  const [addingCat, setAddingCat] = useState(false)
 
-  useEffect(() => { checkAuth(); load() }, [])
+  useEffect(() => { checkAuth(); load(); loadCategories() }, [])
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession()
@@ -37,6 +41,32 @@ export default function AdminPortfolio() {
   async function load() {
     const { data } = await supabase.from('portfolio').select('*').order('created_at', { ascending: false })
     setItems(data || [])
+  }
+
+  async function loadCategories() {
+    const { data } = await supabase.from('portfolio_categories').select('name').order('name')
+    setCategories((data || []).map((r: any) => r.name))
+  }
+
+  async function handleAddCategory() {
+    const name = newCatInput.trim()
+    if (!name) return
+    setAddingCat(true)
+    const { error } = await supabase.from('portfolio_categories').insert({ name })
+    if (!error) {
+      await loadCategories()
+      setForm((p: any) => ({ ...p, category: name }))
+      setNewCatInput('')
+      setShowNewCat(false)
+    }
+    setAddingCat(false)
+  }
+
+  async function handleDeleteCategory(name: string) {
+    if (!confirm(`Hapus kategori "${name}"? Portfolio yang sudah pakai kategori ini tidak terpengaruh.`)) return
+    await supabase.from('portfolio_categories').delete().eq('name', name)
+    await loadCategories()
+    if (form.category === name) setForm((p: any) => ({ ...p, category: '' }))
   }
 
   async function handleSave() {
@@ -140,12 +170,78 @@ export default function AdminPortfolio() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={labelStyle}>Kategori</label>
-                  <select value={form.category || ''} onChange={e => setForm((p: any) => ({ ...p, category: e.target.value }))}
-                    style={{ ...inputStyle, background: '#1a1a2e' }}>
-                    <option value="">Pilih Kategori</option>
-                    {['Research', 'Design', 'Content Creation', 'Public Speaking', 'Organization'].map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+
+                  {/* Dropdown + tombol tambah kategori */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select
+                      value={form.category || ''}
+                      onChange={e => setForm((p: any) => ({ ...p, category: e.target.value }))}
+                      style={{ ...inputStyle, background: '#1a1a2e', flex: 1 }}
+                    >
+                      <option value="">Pilih Kategori</option>
+                      {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <button
+                      onClick={() => setShowNewCat(v => !v)}
+                      title="Tambah kategori baru"
+                      style={{
+                        background: showNewCat ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(99,102,241,0.3)',
+                        color: '#818cf8', borderRadius: '8px',
+                        padding: '0 12px', cursor: 'pointer',
+                        fontSize: '18px', flexShrink: 0,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {showNewCat ? '×' : '+'}
+                    </button>
+                  </div>
+
+                  {/* Input kategori baru */}
+                  {showNewCat && (
+                    <div style={{ marginTop: '8px', background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '10px', padding: '12px' }}>
+                      <p style={{ color: '#818cf8', fontSize: '11px', marginBottom: '8px', fontWeight: 500 }}>TAMBAH KATEGORI BARU</p>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          value={newCatInput}
+                          onChange={e => setNewCatInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+                          placeholder="Nama kategori..."
+                          style={{ ...inputStyle, flex: 1, padding: '8px 10px', fontSize: '13px' }}
+                        />
+                        <button
+                          onClick={handleAddCategory}
+                          disabled={addingCat || !newCatInput.trim()}
+                          style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer', flexShrink: 0, opacity: (!newCatInput.trim() || addingCat) ? 0.5 : 1 }}
+                        >
+                          {addingCat ? '...' : 'Simpan'}
+                        </button>
+                      </div>
+
+                      {/* Daftar kategori yang bisa dihapus */}
+                      {categories.length > 0 && (
+                        <div style={{ marginTop: '10px' }}>
+                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginBottom: '6px' }}>Kategori tersedia:</p>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {categories.map(cat => (
+                              <span key={cat} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '3px 10px 3px 10px', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                {cat}
+                                <button
+                                  onClick={() => handleDeleteCategory(cat)}
+                                  title={`Hapus "${cat}"`}
+                                  style={{ background: 'transparent', border: 'none', color: 'rgba(239,68,68,0.6)', cursor: 'pointer', fontSize: '12px', padding: '0 0 0 2px', lineHeight: 1 }}
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+
                 <div>
                   <label style={labelStyle}>Tags (pisah koma)</label>
                   <input value={form.tags || ''} onChange={e => setForm((p: any) => ({ ...p, tags: e.target.value }))} style={inputStyle} placeholder="tag1, tag2" />
