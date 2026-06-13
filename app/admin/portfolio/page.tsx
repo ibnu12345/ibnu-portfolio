@@ -86,6 +86,7 @@ export default function AdminPortfolio() {
         ? form.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
         : (form.tags || []),
       is_featured: form.is_featured || false,
+      published_date: form.published_date || null,
     }
     if (form.id) {
       await supabase.from('portfolio').update(payload).eq('id', form.id)
