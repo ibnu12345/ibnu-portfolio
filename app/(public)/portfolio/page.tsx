@@ -13,7 +13,7 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from('portfolio').select('*').order('created_at', { ascending: false }),
+      supabase.from('portfolio').select('*').order('is_featured', { ascending: false }).order('created_at', { ascending: false }),
       supabase.from('portfolio_categories').select('name').order('name'),
     ]).then(([{ data: portfolios }, { data: cats }]) => {
       const list = portfolios || []
@@ -26,7 +26,11 @@ export default function PortfolioPage() {
 
   function filter(cat: string) {
     setActive(cat)
-    setFiltered(cat === 'Semua' ? items : items.filter(i => i.category === cat))
+    const base = cat === 'Semua' ? items : items.filter(i => i.category === cat)
+    const sorted = cat === 'Semua'
+     ? base
+     : [...base].sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0))
+      setFiltered(sorted)
   }
 
   return (
