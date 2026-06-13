@@ -4,7 +4,17 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { uploadFile } from '../../lib/upload'
 
-const empty = { title: '', description: '', category: '', youtube_url: '', pdf_url: '', thumbnail_url: '', tags: '', is_featured: false }
+const empty = {
+  title: '', slug: '', description: '', category: '',
+  thumbnail_url: '', gallery_urls: [] as string[],
+  youtube_url: '', pdf_url: '',
+  external_urls: [] as string[],
+  tags: '', is_featured: false
+}
+
+function generateSlug(title: string) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
 
 export default function AdminPortfolio() {
   const router = useRouter()
@@ -13,6 +23,8 @@ export default function AdminPortfolio() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<any>(empty)
   const [saving, setSaving] = useState(false)
+  const [uploadingGallery, setUploadingGallery] = useState(false)
+  const [newLink, setNewLink] = useState('')
 
   useEffect(() => { checkAuth(); load() }, [])
 
@@ -28,9 +40,15 @@ export default function AdminPortfolio() {
   }
 
   async function handleSave() {
+    if (!form.title) return
     setSaving(true)
-    const payload = { ...form, tags: form.tags ? form.tags.split(',').map((t: string) => t.trim()) : [] }
-    if (form.id) await supabase.from('portfolio').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', form.id)
+    const payload = {
+      ...form,
+      tags: typeof form.tags === 'string' ? form.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : form.tags,
+      slug: form.slug || generateSlug(form.title),
+      updated_at: new Date().toISOString()
+    }
+    if (form.id) await supabase.from('portfolio').update(payload).eq('id', form.id)
     else await supabase.from('portfolio').insert(payload)
     setSaving(false); setShowForm(false); setForm(empty); load()
   }
@@ -47,6 +65,46 @@ export default function AdminPortfolio() {
     if (url) setForm((f: any) => ({ ...f, thumbnail_url: url }))
   }
 
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files) return
+    setUploadingGallery(true)
+    const urls: string[] = []
+    for (const file of Array.from(files)) {
+      const url = await uploadFile(file, 'thumbnails')
+      if (url) urls.push(url)
+    }
+    setForm((f: any) => ({ ...f, gallery_urls: [...(f.gallery_urls || []), ...urls] }))
+    setUploadingGallery(false)
+  }
+
+  function removeGalleryImg(idx: number) {
+    setForm((f: any) => ({ ...f, gallery_urls: f.gallery_urls.filter((_: string, i: number) => i !== idx) }))
+  }
+
+  function addLink() {
+    if (!newLink.trim()) return
+    setForm((f: any) => ({ ...f, external_urls: [...(f.external_urls || []), newLink.trim()] }))
+    setNewLink('')
+  }
+
+  function removeLink(idx: number) {
+    setForm((f: any) => ({ ...f, external_urls: f.external_urls.filter((_: string, i: number) => i !== idx) }))
+  }
+
+  function openEdit(item: any) {
+    setForm({
+      ...item,
+      tags: Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || '',
+      gallery_urls: item.gallery_urls || [],
+      external_urls: item.external_urls || [],
+    })
+    setShowForm(true)
+  }
+
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 12px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const }
+  const labelStyle = { color: 'rgba(255,255,255,0.5)', fontSize: '12px', display: 'block', marginBottom: '6px' }
+
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f', color: 'white' }}>Loading...</div>
 
   return (
@@ -59,62 +117,144 @@ export default function AdminPortfolio() {
         <button onClick={() => { setForm(empty); setShowForm(true) }} style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}>+ Tambah Portfolio</button>
       </div>
 
+      {/* Form Modal */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}>
-          <div style={{ background: '#111118', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '16px' }}>
+          <div style={{ background: '#111118', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '680px', maxHeight: '92vh', overflowY: 'auto' }}>
             <h2 style={{ color: 'white', fontSize: '18px', fontWeight: 600, marginBottom: '24px' }}>{form.id ? 'Edit' : 'Tambah'} Portfolio</h2>
-            <div style={{ display: 'grid', gap: '14px' }}>
-              {[{ key: 'title', label: 'Judul *' }, { key: 'youtube_url', label: 'YouTube URL' }, { key: 'pdf_url', label: 'PDF URL' }, { key: 'tags', label: 'Tags (pisah koma)' }].map(f => (
-                <div key={f.key}>
-                  <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', display: 'block', marginBottom: '6px' }}>{f.label}</label>
-                  <input value={form[f.key] || ''} onChange={e => setForm((p: any) => ({ ...p, [f.key]: e.target.value }))}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 12px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+
+            <div style={{ display: 'grid', gap: '16px' }}>
+              {/* Judul */}
+              <div>
+                <label style={labelStyle}>Judul *</label>
+                <input value={form.title} onChange={e => setForm((p: any) => ({ ...p, title: e.target.value, slug: generateSlug(e.target.value) }))} style={inputStyle} placeholder="Nama proyek..." />
+              </div>
+
+              {/* Slug */}
+              <div>
+                <label style={labelStyle}>Slug (auto dari judul)</label>
+                <input value={form.slug} onChange={e => setForm((p: any) => ({ ...p, slug: e.target.value }))} style={{ ...inputStyle, color: 'rgba(255,255,255,0.5)' }} />
+              </div>
+
+              {/* Kategori + Tags */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={labelStyle}>Kategori</label>
+                  <select value={form.category || ''} onChange={e => setForm((p: any) => ({ ...p, category: e.target.value }))}
+                    style={{ ...inputStyle, background: '#1a1a2e' }}>
+                    <option value="">Pilih Kategori</option>
+                    {['Research', 'Design', 'Content Creation', 'Public Speaking', 'Organization'].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </div>
-              ))}
-              <div>
-                <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', display: 'block', marginBottom: '6px' }}>Kategori</label>
-                <select value={form.category || ''} onChange={e => setForm((p: any) => ({ ...p, category: e.target.value }))}
-                  style={{ width: '100%', background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 12px', color: 'white', fontSize: '14px', outline: 'none' }}>
-                  <option value="">Pilih Kategori</option>
-                  {['Research', 'Design', 'Content Creation', 'Public Speaking', 'Organization'].map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <div>
+                  <label style={labelStyle}>Tags (pisah koma)</label>
+                  <input value={form.tags || ''} onChange={e => setForm((p: any) => ({ ...p, tags: e.target.value }))} style={inputStyle} placeholder="tag1, tag2" />
+                </div>
               </div>
+
+              {/* Deskripsi */}
               <div>
-                <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', display: 'block', marginBottom: '6px' }}>Deskripsi</label>
-                <textarea value={form.description || ''} onChange={e => setForm((p: any) => ({ ...p, description: e.target.value }))} rows={3}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 12px', color: 'white', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+                <label style={labelStyle}>Deskripsi</label>
+                <textarea value={form.description || ''} onChange={e => setForm((p: any) => ({ ...p, description: e.target.value }))} rows={4}
+                  style={{ ...inputStyle, resize: 'vertical' }} placeholder="Ceritakan tentang proyek ini..." />
               </div>
+
+              {/* Thumbnail */}
               <div>
-                <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', display: 'block', marginBottom: '6px' }}>Thumbnail</label>
+                <label style={labelStyle}>Thumbnail Utama</label>
                 <input type="file" accept="image/*" onChange={handleThumb} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }} />
-                {form.thumbnail_url && <img src={form.thumbnail_url} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px', marginTop: '8px' }} />}
+                {form.thumbnail_url && (
+                  <div style={{ position: 'relative', display: 'inline-block', marginTop: '8px' }}>
+                    <img src={form.thumbnail_url} style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <button onClick={() => setForm((f: any) => ({ ...f, thumbnail_url: '' }))}
+                      style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', border: 'none', color: 'white', borderRadius: '50%', width: '20px', height: '20px', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                  </div>
+                )}
               </div>
+
+              {/* Gallery */}
+              <div>
+                <label style={labelStyle}>Foto Gallery (bisa banyak)</label>
+                <label style={{ display: 'inline-block', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', marginBottom: '12px' }}>
+                  {uploadingGallery ? 'Mengupload...' : '+ Upload Foto'}
+                  <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} style={{ display: 'none' }} />
+                </label>
+                {form.gallery_urls?.length > 0 && (
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {form.gallery_urls.map((url: string, i: number) => (
+                      <div key={i} style={{ position: 'relative' }}>
+                        <img src={url} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                        <button onClick={() => removeGalleryImg(i)}
+                          style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', border: 'none', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* YouTube */}
+              <div>
+                <label style={labelStyle}>YouTube URL</label>
+                <input value={form.youtube_url || ''} onChange={e => setForm((p: any) => ({ ...p, youtube_url: e.target.value }))} style={inputStyle} placeholder="https://youtube.com/watch?v=..." />
+              </div>
+
+              {/* PDF */}
+              <div>
+                <label style={labelStyle}>PDF URL</label>
+                <input value={form.pdf_url || ''} onChange={e => setForm((p: any) => ({ ...p, pdf_url: e.target.value }))} style={inputStyle} placeholder="https://..." />
+              </div>
+
+              {/* External Links */}
+              <div>
+                <label style={labelStyle}>Link Lainnya (TikTok, Instagram, Drive, dll)</label>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                  <input value={newLink} onChange={e => setNewLink(e.target.value)} onKeyDown={e => e.key === 'Enter' && addLink()}
+                    style={{ ...inputStyle, flex: 1 }} placeholder="https://tiktok.com/... atau link apapun" />
+                  <button onClick={addLink} style={{ background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 16px', cursor: 'pointer', fontSize: '13px', flexShrink: 0 }}>+ Tambah</button>
+                </div>
+                {(form.external_urls || []).map((url: string, i: number) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px 12px', marginBottom: '6px' }}>
+                    <span style={{ flex: 1, color: 'rgba(255,255,255,0.6)', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</span>
+                    <button onClick={() => removeLink(i)} style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '14px', flexShrink: 0 }}>✕</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Featured */}
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <input type="checkbox" checked={form.is_featured} onChange={e => setForm((p: any) => ({ ...p, is_featured: e.target.checked }))} />
-                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Featured</span>
+                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Featured di halaman Home</span>
               </label>
             </div>
+
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-              <button onClick={handleSave} disabled={saving} style={{ flex: 1, background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
+              <button onClick={handleSave} disabled={saving} style={{ flex: 1, background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
               <button onClick={() => setShowForm(false)} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>Batal</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* List */}
       <div style={{ display: 'grid', gap: '12px' }}>
         {items.length === 0 && <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(255,255,255,0.3)' }}>Belum ada portfolio.</div>}
         {items.map(item => (
-          <div key={item.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <div key={item.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+            {item.thumbnail_url && <img src={item.thumbnail_url} style={{ width: '64px', height: '48px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
                 <p style={{ color: 'white', fontWeight: 500, fontSize: '14px', margin: 0 }}>{item.title}</p>
                 {item.is_featured && <span style={{ background: 'rgba(99,102,241,0.2)', color: '#818cf8', fontSize: '10px', padding: '2px 8px', borderRadius: '999px' }}>Featured</span>}
               </div>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', margin: 0 }}>{item.category}</p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px' }}>{item.category}</span>
+                {item.gallery_urls?.length > 0 && <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px' }}>🖼 {item.gallery_urls.length} foto</span>}
+                {item.youtube_url && <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px' }}>▶ YouTube</span>}
+                {item.external_urls?.length > 0 && <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px' }}>🔗 {item.external_urls.length} link</span>}
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => { setForm({ ...item, tags: item.tags?.join(', ') || '' }); setShowForm(true) }} style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Edit</button>
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+              <button onClick={() => openEdit(item)} style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Edit</button>
               <button onClick={() => handleDelete(item.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Hapus</button>
             </div>
           </div>
